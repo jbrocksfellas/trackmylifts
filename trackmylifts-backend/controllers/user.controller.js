@@ -8,6 +8,7 @@ const { sendEmail } = require("../services/email.service");
 const EmailVerification = require("../models/email_verification.model");
 const { FRONTEND_URL, API_URL } = require("../startups/config");
 const crypto = require("crypto");
+const { getTrainingSessionDates } = require("../utils/training_session.util");
 
 exports.createUser = async (req, res) => {
   try {
@@ -129,19 +130,16 @@ exports.findTodayTrainingSession = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const userTimezone = "Asia/Calcutta"; // replace with user's timezone
+    const userObj = await User.findOne({ _id: id }).lean();
+    if (!userObj) return error.notFound("User", res);
 
-    const currentUtcTime = new Date();
+    const userTimezone = userObj.timezone;
 
-    const userLocalTime = dayjs(currentUtcTime).tz(userTimezone);
-
-    const year = userLocalTime.year();
-    const month = userLocalTime.month() + 1; // Note that moment uses 0-indexed months
-    const day = userLocalTime.date();
+    const { startDate, endDate } = getTrainingSessionDates(new Date(), userTimezone);
 
     const trainingSession = await TrainingSession.findOne({
       userId: id,
-      date: { $gte: new Date(year, month - 1, day).toISOString(), $lt: new Date(year, month - 1, day + 1).toISOString() },
+      date: { $gte: startDate.format(), $lt: endDate.format() },
     })
       .lean()
       .populate("exercises._id");

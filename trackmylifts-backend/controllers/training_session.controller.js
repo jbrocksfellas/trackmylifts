@@ -1,25 +1,24 @@
 const TrainingSession = require("../models/training_session.model");
 const Exercise = require("../models/exercise.model");
 const { handleError, error } = require("../utils/error.util");
-const { dayjs } = require("../utils/date.util");
+const { getTrainingSessionDates } = require("../utils/training_session.util");
+const User = require("../models/user.model");
 
 exports.createTrainingSession = async (req, res) => {
   try {
     const user = req.user;
 
-    const userTimezone = "Asia/Calcutta";
+    const userObj = await User.findOne({ _id: user.id }).lean();
 
-    const currentUtcTime = new Date();
+    const userTimezone = userObj.timezone;
 
-    const userLocalTime = dayjs(currentUtcTime).tz(userTimezone);
+    const { startDate, endDate } = getTrainingSessionDates(new Date(), userTimezone);
 
-    const year = userLocalTime.year();
-    const month = userLocalTime.month() + 1;
-    const day = userLocalTime.date();
+    // console.log(startDate.format(), endDate.format());
 
     const trainingSession = await TrainingSession.findOne({
       userId: user.id,
-      date: { $gte: new Date(year, month - 1, day).toISOString(), $lt: new Date(year, month - 1, day + 1).toISOString() },
+      date: { $gte: startDate.format(), $lt: endDate.format() },
     }).lean();
     if (trainingSession) return error.badRequest("Session is already created", res);
 
