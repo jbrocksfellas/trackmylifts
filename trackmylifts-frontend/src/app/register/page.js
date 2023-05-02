@@ -5,7 +5,9 @@ import { getAccessToken, saveAccessToken, saveUser } from "../utils/auth.util";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function page() {
+export default function Page() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,13 +18,9 @@ export default function page() {
     e.preventDefault();
 
     try {
-      if (email && password) {
-        const { data } = await apiAxios.post("/users/login", { email, password });
-
-        saveAccessToken(data.accessToken);
-        saveUser(data.user);
-
-        router.push("/user/track");
+      if (firstName && lastName && email && password) {
+        const { data } = await apiAxios.post("/users", { firstName, lastName, email, password });
+        router.push("/login");
       }
     } catch (err) {}
   };
@@ -42,7 +40,39 @@ export default function page() {
         </p>
 
         <form action="" className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8" onSubmit={handleFormSubmit}>
-          <p className="text-center text-lg font-medium">Sign in to your account</p>
+          <p className="text-center text-lg font-medium">Create account...</p>
+
+          <div>
+            <label for="email" className="sr-only">
+              First name
+            </label>
+
+            <div className="relative">
+              <input
+                type="text"
+                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                placeholder="Enter first name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="email" className="sr-only">
+              Last name
+            </label>
+
+            <div className="relative">
+              <input
+                type="text"
+                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                placeholder="Enter last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+          </div>
 
           <div>
             <label for="email" className="sr-only">
@@ -100,13 +130,13 @@ export default function page() {
           </div>
 
           <button type="submit" className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white">
-            Sign in
+            Sign up
           </button>
 
           <p className="text-center text-sm text-gray-500">
             No account?
-            <Link className="underline" href="/register">
-              Sign up
+            <Link className="underline" href="/login">
+              Sign in
             </Link>
           </p>
         </form>

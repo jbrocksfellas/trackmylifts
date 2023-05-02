@@ -7,7 +7,7 @@ export default function AddSetModal({ exercise, set = { id: "", reps: "", weight
   const [data, setData] = useState(set);
 
   const handleSave = () => {
-    if (data.reps && data.weight) onSave(data);
+    if (data.reps && data.weight) onSave({ exercise, set: data });
   };
 
   return (
@@ -21,7 +21,7 @@ export default function AddSetModal({ exercise, set = { id: "", reps: "", weight
       <input type="checkbox" id="my-modal" className="modal-toggle" />
       <div className={classNames("modal", { "modal-open": exercise })}>
         <div className="modal-box">
-          <h3 className="font-bold text-lg">{exercise}</h3>
+          <h3 className="font-bold text-lg">{exercise.name}</h3>
 
           <div className="mt-6 flex flex-col gap-4">
             <div className="flex items-center gap-4">
