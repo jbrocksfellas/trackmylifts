@@ -5,6 +5,9 @@ const { verifyTrainingSession } = require("../middlewares/verify.middleware");
 
 router.use(verifyAuth);
 router.post("/", trainingSessionController.createTrainingSession);
+
 router.post("/:id/exercises", verifyTrainingSession, trainingSessionController.createExercise);
+
+router.post("/:id/exercises/:exerciseId/sets", verifyTrainingSession, trainingSessionController.createSet);
 
 module.exports = router;

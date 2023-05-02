@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 
 const setSchema = new mongoose.Schema({
-  id: { type: ObjectId, requied: true },
+  id: { type: Number, requied: true },
   reps: { type: Number, required: true },
   weight: { type: Number, required: true },
 });

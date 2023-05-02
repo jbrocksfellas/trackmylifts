@@ -12,7 +12,7 @@ const verifyTrainingSession = async (req, res, next) => {
     if (!trainingSession) return error.notFound("Training session", res);
 
     const isAdmin = [userTypes.ADMIN].includes(user.type);
-    const isResourceOwner = trainingSession.user_id.toString() === user.id;
+    const isResourceOwner = trainingSession.userId.toString() === user.id;
 
     if (!(isAdmin || isResourceOwner)) return error.forbidden("Cannot access this training session!", res);
 
@@ -20,6 +20,7 @@ const verifyTrainingSession = async (req, res, next) => {
 
     next();
   } catch (err) {
+    console.log(err)
     error.unauthorized("Unauthorized: " + err.message, res);
   }
 };

@@ -7,5 +7,7 @@ router.post("/login", userController.loginWithEmail);
 
 router.use(verifyAuth);
 router.get("/:id", verifyUser, userController.findUserById);
+router.get("/:id/training-sessions/last-volume", verifyUser, userController.findLastExerciseVolume);
+router.get("/:id/training-sessions/today", verifyUser, userController.findTodayTrainingSession);
 
 module.exports = router;

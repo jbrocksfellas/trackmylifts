@@ -1,24 +1,11 @@
 version: '3.9'
-services:
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: trackmylifts
-      MONGO_INITDB_ROOT_PASSWORD: meowmeowmeow
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-  
+services:  
   backend:
     build:
       context: ./trackmylifts-backend
       dockerfile: Dockerfile
       ports:
         - "4000:4000"
-      depends_on:
-        - mongo
   
   frontend:
     build:
@@ -28,6 +15,3 @@ services:
         - "3000:3000"
       depends_on:
         - backend
-
-volumes:
-  mongodb_data:

@@ -9,7 +9,7 @@ async function matchPassword(password1, password2) {
 }
 
 function getAuthJwt(data = {}) {
-  return jwt.sign(data, AUTH_JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign(data, AUTH_JWT_SECRET, { expiresIn: "24h" });
 }
 
 function verifyAuthJwt(token) {
