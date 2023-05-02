@@ -19,7 +19,7 @@ exports.createTrainingSession = async (req, res) => {
 
     const trainingSession = await TrainingSession.findOne({
       userId: user.id,
-      date: { $gte: new Date(year, month - 1, day), $lt: new Date(year, month - 1, day + 1) },
+      date: { $gte: new Date(year, month - 1, day).toISOString(), $lt: new Date(year, month - 1, day + 1).toISOString() },
     }).lean();
     if (trainingSession) return error.badRequest("Session is already created", res);
 

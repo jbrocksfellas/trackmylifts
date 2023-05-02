@@ -4,6 +4,7 @@ const { verifyAuth, verifyUser } = require("../middlewares/auth.middleware");
 
 router.post("/", userController.createUser);
 router.post("/login", userController.loginWithEmail);
+router.get("/verify-email/:session", userController.verifyEmail);
 
 router.use(verifyAuth);
 router.get("/:id", verifyUser, userController.findUserById);

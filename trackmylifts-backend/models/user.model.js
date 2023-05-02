@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
     },
     type: { type: String, default: "user" },
     timezone: { type: String, default: "Asia/Calcutta" },
+    emailVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
