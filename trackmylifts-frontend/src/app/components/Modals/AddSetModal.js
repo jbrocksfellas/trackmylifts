@@ -3,7 +3,7 @@
 import classNames from "classnames";
 import { useState } from "react";
 
-export default function AddSetModal({ exercise, set = { id: "", reps: "", weight: "" }, onSave }) {
+export default function AddSetModal({ exercise, set = { id: "", reps: "", weight: "" }, onSave, onCancel }) {
   const [data, setData] = useState(set);
 
   const handleSave = () => {
@@ -13,7 +13,7 @@ export default function AddSetModal({ exercise, set = { id: "", reps: "", weight
   return (
     <div>
       {/* The button to open modal */}
-      {/* <label htmlFor="my-modal" className="btn" onClick={(e) => console.log("cl", e.target)}>
+      {/* <label htmlhtmlFor="my-modal" className="btn" onClick={(e) => console.log("cl", e.target)}>
         open modal
       </label> */}
 
@@ -51,7 +51,11 @@ export default function AddSetModal({ exercise, set = { id: "", reps: "", weight
           </div>
 
           <div className="modal-action">
-            <label htmlFor="my-modal" className="btn" onClick={handleSave}>
+            <button className="btn btn-primary" onClick={onCancel}>
+              Cancel
+            </button>
+
+            <label htmlhtmlFor="my-modal" className="btn" onClick={handleSave}>
               Save Changes
             </label>
           </div>

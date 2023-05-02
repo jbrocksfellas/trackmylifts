@@ -5,14 +5,17 @@ import { useMemo } from "react";
 
 export default function Collapse({ id, label = "Click me", children, onAdd, exercise, newVolume = 0, oldVolume = 0 }) {
   const percentage = useMemo(() => {
+    if (oldVolume === 0) return 0;
+
     const newPercentage = (newVolume * 100) / oldVolume;
-    console.log(newPercentage);
+
+    console.log(newPercentage, oldVolume, newVolume);
 
     if (isNaN(newPercentage)) return 0;
 
     const diff = newPercentage - 100;
 
-    return diff;
+    return diff.toFixed(1)
   }, [oldVolume, newVolume]);
 
   return (
@@ -31,12 +34,12 @@ export default function Collapse({ id, label = "Click me", children, onAdd, exer
 
       <div className="collapse-content">
         {children}
-        <button class="ml-auto my-2 bg-green-500 hover:bg-green-600 rounded-full w-6 h-6 flex items-center justify-center" onClick={onAdd}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+        <button className="ml-auto my-2 bg-green-500 hover:bg-green-600 rounded-full w-6 h-6 flex items-center justify-center" onClick={onAdd}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
             <path
-              fill-rule="evenodd"
+              fillRule="evenodd"
               d="M10 18a1 1 0 0 1-1-1V11H4a1 1 0 1 1 0-2h5V4a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v6a1 1 0 0 1-1 1z"
-              clip-rule="evenodd"
+              clipRule="evenodd"
               onClick={onAdd}
             />
           </svg>
