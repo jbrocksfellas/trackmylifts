@@ -151,7 +151,11 @@ exports.findTodayTrainingSession = async (req, res) => {
       exercises: trainingSession.exercises.map((exercise) => {
         return {
           exercise: { id: exercise._id._id, name: exercise._id.name },
-          sets: exercise.sets,
+          sets: exercise.sets.map((set) => ({
+            id: set._id,
+            reps: set.reps,
+            weight: set.weight,
+          })),
         };
       }),
     });

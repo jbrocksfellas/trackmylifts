@@ -1,12 +1,11 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "../../components/Searches";
-import { getAccessToken, removeAccessToken } from "../../utils/auth.util";
+import { getAccessToken } from "../../utils/auth.util";
 import { apiAxios } from "../../utils/api.util";
 import { LiftTable } from "../../components/Tables";
 import { Collapse } from "../../components/Collapses";
 import { AddSetModal } from "../../components/Modals";
-import { PercentageDownIcon, PercentageUpIcon } from "../../components/Icons";
 import useAuth from "../../hooks/useAuth";
 import { extractError } from "../../utils/error.util";
 
@@ -16,7 +15,6 @@ export default function Page() {
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [sets, setSets] = useState([]);
   const [trainingSession, setTrainingSession] = useState({
     id: "",
     exercises: [],
@@ -28,48 +26,108 @@ export default function Page() {
     setQuery(value);
   };
 
-  const handleAutocomplete = (option) => {
+  const handleAutocomplete = async (option) => {
     setSuggestions([]);
     setQuery("");
 
-    // add old volume for this exercise
-    apiAxios.get(`/users/me/training-sessions/last-volume?exerciseId=${option.id}`, { headers: { Authorization: "Bearer " + accessToken } }).then((res) => {
-      const vol = res.data.volume;
+    // add set to the backend
+    await apiAxios.post(
+      `/training-sessions/${trainingSession.id}/exercises`,
+      { exerciseId: option.id },
+      { headers: { Authorization: "Bearer " + accessToken } }
+    );
 
-      setOldVolumes({ ...oldVolumes, [option.id]: vol });
+    // add set to the trainingSession
+    setTrainingSession({ ...trainingSession, exercises: [...trainingSession.exercises, { exercise: { id: option.id, name: option.value }, sets: [] }] });
+
+    // add old volume for this exercise
+    const { data } = await apiAxios.get(`/users/me/training-sessions/last-volume?exerciseId=${option.id}`, {
+      headers: { Authorization: "Bearer " + accessToken },
     });
 
-    // add set to the backend
-    apiAxios
-      .post(`/training-sessions/${trainingSession.id}/exercises`, { exerciseId: option.id }, { headers: { Authorization: "Bearer " + accessToken } })
-      .then((res) => {
-        // add set to the trainingSession
-        setTrainingSession({ ...trainingSession, exercises: [...trainingSession.exercises, { exercise: { id: option.id, name: option.value }, sets: [] }] });
-      });
+    const vol = data.volume;
+    setOldVolumes({ ...oldVolumes, [option.id]: vol });
   };
 
-  const handleSetAdded = ({ exercise, set }) => {
-    const { reps, weight } = set;
-    setModalData(null);
-    console.log("d", exercise, set);
+  const handleSetAdded = async ({ exercise, set, edited }) => {
+    if (edited) {
+      // update set
+      console.log("edited", set);
+      const { reps, weight } = set;
 
-    // add to backend
-    apiAxios
-      .post(`/training-sessions/${trainingSession.id}/exercises/${exercise.id}/sets`, { reps, weight }, { headers: { Authorization: "Bearer " + accessToken } })
-      .then((res) => {
-        // add on frontend
-        const set = res.data;
+      // update on backend
+      const { data: updatedSet } = await apiAxios.put(
+        `/training-sessions/${trainingSession.id}/exercises/${exercise.id}/sets/${set.id}`,
+        { reps, weight },
+        { headers: { Authorization: "Bearer " + accessToken } }
+      );
 
-        const newTrainingSession = { ...trainingSession };
-        const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
-        newTrainingSession.exercises[exerciseIndex].sets.push(set);
+      setModalData(null);
 
-        setTrainingSession(newTrainingSession);
-      });
+      // update on frontend
+      const newTrainingSession = { ...trainingSession };
+      const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
+      const setIndex = newTrainingSession.exercises[exerciseIndex].sets.findIndex((innerSet) => innerSet.id === set.id);
+      newTrainingSession.exercises[exerciseIndex].sets[setIndex] = updatedSet;
+      setTrainingSession(newTrainingSession);
+    } else {
+      const { reps, weight } = set;
+      setModalData(null);
+      console.log("exercise, set", exercise, set);
+
+      // add to backend
+      const { data: addedSet } = await apiAxios.post(
+        `/training-sessions/${trainingSession.id}/exercises/${exercise.id}/sets`,
+        { reps, weight },
+        { headers: { Authorization: "Bearer " + accessToken } }
+      );
+
+      // add on frontend
+      const newTrainingSession = { ...trainingSession };
+      const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
+      newTrainingSession.exercises[exerciseIndex].sets.push(addedSet);
+
+      setTrainingSession(newTrainingSession);
+    }
   };
 
   const handleSetCancel = () => {
     setModalData(null);
+  };
+
+  const handleDeleteSet = async (set) => {
+    console.log("deleting set", set);
+
+    // delete set from backend
+    await apiAxios.delete(`/training-sessions/${trainingSession.id}/exercises/${set.exercise.id}/sets/${set.id}`, {
+      headers: { Authorization: "Bearer " + accessToken },
+    });
+
+    // delete from frontend
+    const newTrainingSession = { ...trainingSession };
+    const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === set.exercise.id);
+    const setIndex = newTrainingSession.exercises[exerciseIndex].sets.findIndex((innerSet) => innerSet.id === set.id);
+    newTrainingSession.exercises[exerciseIndex].sets.splice(setIndex, 1);
+
+    setTrainingSession(newTrainingSession);
+  };
+
+  const handleEditSet = async (set) => {
+    console.log("editing set", set);
+    setModalData({ exercise: set.exercise, id: set.id, tempId: set.index + 1, reps: set.reps, weight: set.weight, editing: true });
+  };
+
+  const handleDeleteExercise = async (exercise) => {
+    console.log("delete exercise", exercise);
+    // delete on backend
+    await apiAxios.delete(`/training-sessions/${trainingSession.id}/exercises/${exercise.id}`, { headers: { Authorization: "Bearer " + accessToken } });
+
+    // delete on frontend
+    const newTrainingSession = { ...trainingSession };
+    const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
+    newTrainingSession.exercises.splice(exerciseIndex, 1);
+
+    setTrainingSession(newTrainingSession);
   };
 
   useEffect(() => {
@@ -78,8 +136,6 @@ export default function Page() {
         apiAxios
           .get(`/exercises?query=${query}`, { headers: { Authorization: "Bearer " + getAccessToken() } })
           .then((res) => {
-            console.log(res);
-
             // remove already added suggestions
             const newSuggestions = res.data.exercises.filter((exercise) => {
               const alreadyPresent = trainingSession.exercises.some((innerExercise) => {
@@ -97,33 +153,38 @@ export default function Page() {
       } else {
         setSuggestions([]);
       }
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
   useEffect(() => {
     if (accessToken && !trainingSession.id) {
-      // find training session
-
-      apiAxios
-        .get("/users/me/training-sessions/today", { headers: { Authorization: "Bearer " + accessToken } })
-        .then((res) => {
-          console.log("r", res.data);
-          setTrainingSession(res.data);
-
-          // add old volume for this exercise
-          res.data.exercises.forEach((exercise) => {
-            apiAxios
-              .get(`/users/me/training-sessions/last-volume?exerciseId=${exercise.exercise.id}`, { headers: { Authorization: "Bearer " + accessToken } })
-              .then((res) => {
-                const vol = res.data.volume;
-
-                setOldVolumes({ ...oldVolumes, [exercise.exercise.id]: vol });
-              });
+      const fetchData = async () => {
+        try {
+          // find training session
+          const { data: fetchedTrainingSession } = await apiAxios.get("/users/me/training-sessions/today", {
+            headers: { Authorization: "Bearer " + accessToken },
           });
-        })
-        .catch((err) => {
+          setTrainingSession(fetchedTrainingSession);
+
+          // find exercises volume
+          const tempOldVolumes = {};
+          await Promise.all(
+            fetchedTrainingSession.exercises.map(async (exercise) => {
+              const { data } = await apiAxios.get(`/users/me/training-sessions/last-volume?exerciseId=${exercise.exercise.id}`, {
+                headers: { Authorization: "Bearer " + accessToken },
+              });
+
+              const vol = data.volume;
+              tempOldVolumes[exercise.exercise.id] = vol;
+
+              return { [exercise.exercise.id]: vol };
+            })
+          );
+
+          setOldVolumes({ ...oldVolumes, ...tempOldVolumes });
+        } catch (err) {
           const { status } = extractError(err);
           if (status === 404) {
             // create new session
@@ -132,7 +193,10 @@ export default function Page() {
               setTrainingSession(res.data);
             });
           }
-        });
+        }
+      };
+
+      fetchData();
     }
   }, [accessToken]);
 
@@ -152,7 +216,8 @@ export default function Page() {
       {modalData && (
         <AddSetModal
           exercise={modalData.exercise}
-          set={{ id: modalData.id, reps: modalData.reps, weight: modalData.weight }}
+          set={{ id: modalData.id, tempId: modalData.tempId, reps: modalData.reps, weight: modalData.weight }}
+          editing={modalData.editing}
           onSave={handleSetAdded}
           onCancel={handleSetCancel}
         />
@@ -172,9 +237,15 @@ export default function Page() {
                 label={exercise.exercise.name}
                 oldVolume={oldVolumes[exercise.exercise.id]}
                 newVolume={newVolume}
-                onAdd={() => setModalData({ exercise: exercise.exercise, id: exercise.sets.length + 1, reps: "", weight: "" })}
+                onAdd={() => setModalData({ exercise: exercise.exercise, id: null, tempId: exercise.sets.length + 1, reps: "", weight: "", editing: false })}
               >
-                <LiftTable sets={exercise.sets} />
+                <LiftTable
+                  exercise={exercise.exercise}
+                  sets={exercise.sets}
+                  onEdit={handleEditSet}
+                  onDelete={handleDeleteSet}
+                  onExerciseDelete={handleDeleteExercise}
+                />
               </Collapse>
             </div>
           );

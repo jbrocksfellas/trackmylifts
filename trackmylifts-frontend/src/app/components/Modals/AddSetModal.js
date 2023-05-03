@@ -3,11 +3,13 @@
 import classNames from "classnames";
 import { useState } from "react";
 
-export default function AddSetModal({ exercise, set = { id: "", reps: "", weight: "" }, onSave, onCancel }) {
+export default function AddSetModal({ exercise, set, editing = false, onSave, onCancel }) {
   const [data, setData] = useState(set);
 
   const handleSave = () => {
-    if (data.reps && data.weight) onSave({ exercise, set: data });
+    if (data.reps && data.weight) {
+      onSave({ exercise, set: data, edited: editing });
+    }
   };
 
   return (
@@ -26,7 +28,7 @@ export default function AddSetModal({ exercise, set = { id: "", reps: "", weight
           <div className="mt-6 flex flex-col gap-4">
             <div className="flex items-center gap-4">
               <h4 className="font-bold">Sets</h4>
-              <input type="number" placeholder="" className="input input-bordered input-accent w-full max-w-xs" disabled={true} value={data.id} />
+              <input type="number" placeholder="" className="input input-bordered input-accent w-full max-w-xs" disabled={true} value={data.tempId} />
             </div>
             <div className="flex items-center gap-4">
               <h4 className="font-bold">Reps</h4>
@@ -55,7 +57,7 @@ export default function AddSetModal({ exercise, set = { id: "", reps: "", weight
               Cancel
             </button>
 
-            <label htmlhtmlFor="my-modal" className="btn" onClick={handleSave}>
+            <label htmlFor="my-modal" className="btn" onClick={handleSave}>
               Save Changes
             </label>
           </div>

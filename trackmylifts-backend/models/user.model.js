@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       minlength: [8, "Password should be at least 8 characters"],
     },
-    type: { type: String, default: "user" },
+    type: { type: String, default: "user", enum: ["user", "admin"] },
     timezone: { type: String, default: "Asia/Calcutta" },
     emailVerified: { type: Boolean, default: false },
   },

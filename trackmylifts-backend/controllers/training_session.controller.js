@@ -31,6 +31,18 @@ exports.createTrainingSession = async (req, res) => {
   }
 };
 
+exports.deleteTrainingSession = async (req, res) => {
+  try {
+    const trainingSession = req.trainingSession;
+
+    await TrainingSession.deleteOne({ _id: trainingSession._id });
+
+    res.sendStatus(204);
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
 exports.createExercise = async (req, res) => {
   try {
     const trainingSession = req.trainingSession;
@@ -53,6 +65,20 @@ exports.createExercise = async (req, res) => {
   }
 };
 
+exports.deleteExerciseById = async (req, res) => {
+  try {
+    const trainingSession = req.trainingSession;
+
+    const { exerciseId } = req.params;
+
+    await TrainingSession.updateOne({ _id: trainingSession._id }, { $pull: { exercises: { _id: exerciseId } } }).lean();
+
+    res.sendStatus(204);
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
 exports.createSet = async (req, res) => {
   try {
     const trainingSession = req.trainingSession;
@@ -67,15 +93,58 @@ exports.createSet = async (req, res) => {
     const exercise = await Exercise.findOne({ _id: exerciseId }).lean();
     if (!exercise) return error.notFound("Exercise", res);
 
-    const ex = trainingSession.exercises.find((exercise) => exercise._id.toString() === exerciseId);
-    const setLength = ex.sets.length;
-
-    await TrainingSession.findOneAndUpdate(
+    const updatedTrainingSession = await TrainingSession.findOneAndUpdate(
       { _id: trainingSession._id, "exercises._id": exercise._id },
-      { $push: { "exercises.$.sets": { id: setLength + 1, reps, weight } } }
+      { $push: { "exercises.$.sets": { reps, weight } } },
+      { new: true }
     ).lean();
 
-    res.json({ id: setLength + 1, reps, weight });
+    const newSets = updatedTrainingSession.exercises.find((exercise) => exercise._id.toString() === exerciseId).sets;
+    const newSetId = newSets[newSets.length - 1]._id;
+
+    res.json({ id: newSetId, reps, weight });
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+exports.deleteSetById = async (req, res) => {
+  try {
+    const trainingSession = req.trainingSession;
+
+    const { exerciseId, setId } = req.params;
+
+    await TrainingSession.updateOne({ _id: trainingSession._id, "exercises._id": exerciseId }, { $pull: { "exercises.$.sets": { _id: setId } } }).lean();
+
+    res.sendStatus(204);
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+exports.updateSetById = async (req, res) => {
+  try {
+    const trainingSession = req.trainingSession;
+
+    const { exerciseId, setId } = req.params;
+    const { reps, weight } = req.body;
+
+    const updatedTrainingSession = await TrainingSession.findOneAndUpdate(
+      { _id: trainingSession._id, "exercises._id": exerciseId, "exercises.sets._id": setId },
+      {
+        $set: {
+          "exercises.$[exercise].sets.$[set].reps": reps,
+          "exercises.$[exercise].sets.$[set].weight": weight,
+        },
+      },
+      {
+        arrayFilters: [{ "exercise._id": exerciseId }, { "set._id": setId }],
+        new: true,
+      }
+    ).lean();
+    if (!updatedTrainingSession) return error.notFound("Set", res);
+
+    res.json({ id: setId, reps, weight });
   } catch (err) {
     handleError(err, res);
   }

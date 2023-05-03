@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 
 const setSchema = new mongoose.Schema({
-  id: { type: Number, requied: true },
-  reps: { type: Number, required: true },
+  id: { type: Number, requied: true, min: [1, "Cannot enter less than 1 rep"] },
+  reps: { type: Number, required: true, min: [1, "Cannot enter less than 1 kg"] },
   weight: { type: Number, required: true },
 });
 

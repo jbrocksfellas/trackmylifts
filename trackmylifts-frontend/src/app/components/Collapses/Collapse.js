@@ -15,7 +15,9 @@ export default function Collapse({ id, label = "Click me", children, onAdd, exer
 
     const diff = newPercentage - 100;
 
-    return diff.toFixed(1)
+    if (diff === 0) return 0;
+
+    return diff.toFixed(1);
   }, [oldVolume, newVolume]);
 
   return (

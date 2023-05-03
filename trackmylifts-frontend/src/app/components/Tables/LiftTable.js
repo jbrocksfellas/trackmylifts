@@ -1,8 +1,14 @@
 "use client";
 
-export default function LiftTable({ sets = [], onAdd }) {
+import { RxCross1 } from "react-icons/rx";
+import { FiEdit2 } from "react-icons/fi";
+
+export default function LiftTable({ exercise, sets = [], onEdit, onDelete, onExerciseDelete }) {
   return (
     <div className="overflow-x-auto">
+      <div className="absolute btn btn-circle btn-error z-10 right-0" onClick={() => onExerciseDelete(exercise)}>
+        <RxCross1 />
+      </div>
       <table className="table w-full">
         {/* head */}
         <thead>
@@ -22,7 +28,12 @@ export default function LiftTable({ sets = [], onAdd }) {
                 <td>{set.reps}</td>
                 <td>{set.weight}</td>
                 <td>
-                  <button className="btn btn-accent">Edit</button>
+                  <button className="btn btn-primary btn-circle" onClick={() => onEdit({ exercise, index: i, ...set })}>
+                    <FiEdit2 />
+                  </button>
+                  <button className="ml-2 btn btn-circle btn-error" onClick={() => onDelete({ exercise, index: i, ...set })}>
+                    <RxCross1 />
+                  </button>
                 </td>
               </tr>
             );
