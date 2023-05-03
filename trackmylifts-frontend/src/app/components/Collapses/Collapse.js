@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { PercentageUpIcon, PercentageDownIcon } from "../../components/Icons";
 import { useMemo } from "react";
 
-export default function Collapse({ id, label = "Click me", children, onAdd, exercise, newVolume = 0, oldVolume = 0 }) {
+export default function Collapse({ id, label = "Click me", children, onAdd, onDelete, exercise, newVolume = 0, oldVolume = 0 }) {
   const percentage = useMemo(() => {
     if (oldVolume === 0) return 0;
 
@@ -36,16 +36,28 @@ export default function Collapse({ id, label = "Click me", children, onAdd, exer
 
       <div className="collapse-content">
         {children}
-        <button className="ml-auto my-2 bg-green-500 hover:bg-green-600 rounded-full w-6 h-6 flex items-center justify-center" onClick={onAdd}>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M10 18a1 1 0 0 1-1-1V11H4a1 1 0 1 1 0-2h5V4a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v6a1 1 0 0 1-1 1z"
-              clipRule="evenodd"
-              onClick={onAdd}
-            />
-          </svg>
-        </button>
+        <div className="flex justify-between mx-4 mt-4">
+          <button className="bg-green-500 hover:bg-green-600 rounded-full w-6 h-6 flex items-center justify-center" onClick={onAdd}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M10 18a1 1 0 0 1-1-1V11H4a1 1 0 1 1 0-2h5V4a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v6a1 1 0 0 1-1 1z"
+                clipRule="evenodd"
+                onClick={onAdd}
+              />
+            </svg>
+          </button>
+          <button className="bg-red-500 hover:bg-red-600 rounded-full w-6 h-6 flex items-center justify-center rotate-45" onClick={onDelete}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M10 18a1 1 0 0 1-1-1V11H4a1 1 0 1 1 0-2h5V4a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v6a1 1 0 0 1-1 1z"
+                clipRule="evenodd"
+                onClick={onAdd}
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

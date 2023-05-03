@@ -8,6 +8,7 @@ import { Collapse } from "../../components/Collapses";
 import { AddSetModal } from "../../components/Modals";
 import useAuth from "../../hooks/useAuth";
 import { extractError } from "../../utils/error.util";
+import classNames from "classnames";
 
 export default function Page() {
   const { accessToken, user, logOut } = useAuth();
@@ -20,6 +21,7 @@ export default function Page() {
     exercises: [],
   });
   const [modalData, setModalData] = useState(null);
+  const [deleteExerciseModal, setDeleteExerciseModal] = useState(null);
 
   const handleQueryChange = (value) => {
     if (value === "") setSuggestions([]);
@@ -95,6 +97,21 @@ export default function Page() {
     setModalData(null);
   };
 
+  const handleSureDeleteExercise = async () => {
+    const exercise = deleteExerciseModal;
+
+    // delete on backend
+    await apiAxios.delete(`/training-sessions/${trainingSession.id}/exercises/${exercise.id}`, { headers: { Authorization: "Bearer " + accessToken } });
+
+    // delete on frontend
+    const newTrainingSession = { ...trainingSession };
+    const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
+    newTrainingSession.exercises.splice(exerciseIndex, 1);
+
+    setTrainingSession(newTrainingSession);
+    setDeleteExerciseModal(null);
+  };
+
   const handleDeleteSet = async (set) => {
     console.log("deleting set", set);
 
@@ -118,16 +135,18 @@ export default function Page() {
   };
 
   const handleDeleteExercise = async (exercise) => {
-    console.log("delete exercise", exercise);
-    // delete on backend
-    await apiAxios.delete(`/training-sessions/${trainingSession.id}/exercises/${exercise.id}`, { headers: { Authorization: "Bearer " + accessToken } });
+    console.log("open modal");
+    setDeleteExerciseModal(exercise);
+    // console.log("delete exercise", exercise);
+    // // delete on backend
+    // await apiAxios.delete(`/training-sessions/${trainingSession.id}/exercises/${exercise.id}`, { headers: { Authorization: "Bearer " + accessToken } });
 
-    // delete on frontend
-    const newTrainingSession = { ...trainingSession };
-    const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
-    newTrainingSession.exercises.splice(exerciseIndex, 1);
+    // // delete on frontend
+    // const newTrainingSession = { ...trainingSession };
+    // const exerciseIndex = newTrainingSession.exercises.findIndex((innerExercise) => innerExercise.exercise.id === exercise.id);
+    // newTrainingSession.exercises.splice(exerciseIndex, 1);
 
-    setTrainingSession(newTrainingSession);
+    // setTrainingSession(newTrainingSession);
   };
 
   useEffect(() => {
@@ -223,6 +242,8 @@ export default function Page() {
         />
       )}
 
+      {deleteExerciseModal && <DeleteModal exercise={deleteExerciseModal} onYes={handleSureDeleteExercise} onNo={() => setDeleteExerciseModal(null)} />}
+
       <div className="">
         {trainingSession.exercises.map((exercise, i) => {
           let newVolume = 0;
@@ -238,6 +259,7 @@ export default function Page() {
                 oldVolume={oldVolumes[exercise.exercise.id]}
                 newVolume={newVolume}
                 onAdd={() => setModalData({ exercise: exercise.exercise, id: null, tempId: exercise.sets.length + 1, reps: "", weight: "", editing: false })}
+                onDelete={() => handleDeleteExercise(exercise.exercise)}
               >
                 <LiftTable
                   exercise={exercise.exercise}
@@ -255,29 +277,32 @@ export default function Page() {
   );
 }
 
-const dum = [
-  {
-    exercise: { id: 1, name: "Bench Press" },
-    sets: [
-      { id: 1, reps: 10, weight: 100 },
-      { id: 2, reps: 10, weight: 110 },
-      { id: 3, reps: 10, weight: 115 },
-    ],
-  },
-  {
-    exercise: { id: 1, name: "Squats" },
-    sets: [
-      { id: 1, reps: 10, weight: 100 },
-      { id: 2, reps: 10, weight: 110 },
-      { id: 3, reps: 10, weight: 115 },
-    ],
-  },
-  {
-    exercise: { id: 1, name: "Deadlift" },
-    sets: [
-      { id: 1, reps: 10, weight: 100 },
-      { id: 2, reps: 10, weight: 110 },
-      { id: 3, reps: 10, weight: 115 },
-    ],
-  },
-];
+const DeleteModal = ({ exercise, onYes, onNo }) => {
+  return (
+    <div>
+      <input type="checkbox" id="my-modal" className="modal-toggle" />
+      <div className={classNames("modal", { "modal-open": exercise })}>
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Are you sure you want to delete?</h3>
+
+          {/* <div className="mt-6 flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <h4 className="font-bold">Sets</h4>
+              <input type="number" placeholder="" className="input input-bordered input-accent w-full max-w-xs" disabled={true} value={data.tempId} />
+            </div>
+          </div> */}
+
+          <div className="modal-action">
+            <button className="btn btn-error" onClick={onNo}>
+              No
+            </button>
+
+            <button className="btn btn-primary" onClick={onYes}>
+              Yes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

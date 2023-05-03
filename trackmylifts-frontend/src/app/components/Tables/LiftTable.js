@@ -6,9 +6,9 @@ import { FiEdit2 } from "react-icons/fi";
 export default function LiftTable({ exercise, sets = [], onEdit, onDelete, onExerciseDelete }) {
   return (
     <div className="overflow-x-auto">
-      <div className="absolute btn btn-circle btn-error z-10 right-0" onClick={() => onExerciseDelete(exercise)}>
+      {/* <div className="absolute btn btn-circle btn-error z-10 right-0" onClick={() => onExerciseDelete(exercise)}>
         <RxCross1 />
-      </div>
+      </div> */}
       <table className="table w-full">
         {/* head */}
         <thead>
@@ -32,7 +32,7 @@ export default function LiftTable({ exercise, sets = [], onEdit, onDelete, onExe
                     <FiEdit2 />
                   </button>
                   <button className="ml-2 btn btn-circle btn-error" onClick={() => onDelete({ exercise, index: i, ...set })}>
-                    <RxCross1 />
+                    <RxCross1 className="text-white stroke-[1px]" />
                   </button>
                 </td>
               </tr>
