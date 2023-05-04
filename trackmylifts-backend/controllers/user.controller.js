@@ -141,7 +141,7 @@ exports.findTodayTrainingSession = async (req, res) => {
 
     const trainingSession = await TrainingSession.findOne({
       userId: id,
-      date: { $gte: startDate.format(), $lt: endDate.format() },
+      createdAt: { $gte: startDate.format(), $lt: endDate.format() },
     })
       .lean()
       .populate("exercises._id");
@@ -149,7 +149,6 @@ exports.findTodayTrainingSession = async (req, res) => {
 
     res.json({
       id: trainingSession._id,
-      date: trainingSession.date,
       exercises: trainingSession.exercises.map((exercise) => {
         return {
           exercise: { id: exercise._id._id, name: exercise._id.name },
@@ -160,6 +159,7 @@ exports.findTodayTrainingSession = async (req, res) => {
           })),
         };
       }),
+      createdAt: trainingSession.createdAt,
     });
   } catch (err) {
     handleError(err, res);

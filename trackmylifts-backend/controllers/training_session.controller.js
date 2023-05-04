@@ -18,14 +18,14 @@ exports.createTrainingSession = async (req, res) => {
 
     const trainingSession = await TrainingSession.findOne({
       userId: user.id,
-      date: { $gte: startDate.format(), $lt: endDate.format() },
+      createdAt: { $gte: startDate.format(), $lt: endDate.format() },
     }).lean();
     if (trainingSession) return error.badRequest("Session is already created", res);
 
     const newTrainingSession = new TrainingSession({ userId: user.id, exercises: [] });
     const session = await newTrainingSession.save();
 
-    res.json({ id: session._id, date: session.date, exercises: [] });
+    res.json({ id: session._id, exercises: [], createdAt: session.createdAt });
   } catch (err) {
     handleError(err, res);
   }

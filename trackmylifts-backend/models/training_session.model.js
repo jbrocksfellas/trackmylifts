@@ -15,7 +15,7 @@ const exerciseSchema = new mongoose.Schema({
 const trainingSessionSchema = new mongoose.Schema(
   {
     userId: { type: ObjectId, required: true, ref: "User" },
-    date: { type: Date, required: true, default: Date.now() },
+    date: { type: Date, required: true, default: () => Date.now() },
     exercises: [{ type: exerciseSchema, required: true }],
   },
   { timestamps: true }
