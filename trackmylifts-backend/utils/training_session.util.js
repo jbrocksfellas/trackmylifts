@@ -7,6 +7,8 @@ function getTrainingSessionDates(date = new Date(), timezone = "Asia/Calcutta") 
   const startDate = dayjs.tz(dayjs(userLocalTime).format("YYYY-MM-DD"), timezone).startOf("day");
   const endDate = startDate.add(1, "day");
 
+  console.log(startDate.format(), endDate.format())
+
   return { startDate: startDate, endDate };
 }
 

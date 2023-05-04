@@ -137,6 +137,8 @@ exports.findTodayTrainingSession = async (req, res) => {
 
     const { startDate, endDate } = getTrainingSessionDates(new Date(), userTimezone);
 
+    // console.log(startDate.format(), endDate.format());
+
     const trainingSession = await TrainingSession.findOne({
       userId: id,
       date: { $gte: startDate.format(), $lt: endDate.format() },
