@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { PercentageUpIcon, PercentageDownIcon } from "../../components/Icons";
 import { useMemo } from "react";
 
-export default function Collapse({ id, label = "Click me", children, onAdd, onDelete, exercise, newVolume = 0, oldVolume = 0 }) {
+export default function Collapse({ id, label = "Click me", children, onAdd, onDelete, newVolume = 0, oldVolume = 0 }) {
   const percentage = useMemo(() => {
     if (oldVolume === 0) return 0;
 

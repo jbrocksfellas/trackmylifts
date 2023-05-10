@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { apiAxios } from "../utils/api.util";
-import { getAccessToken, saveAccessToken, saveUser } from "../utils/auth.util";
+import { getAccessToken, getUser, saveAccessToken, saveUser } from "../utils/auth.util";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "../utils/toast.util";
@@ -29,7 +29,7 @@ export default function page() {
       saveUser(user);
 
       // if user is admin send to admin panel
-      if (user.type === "admin") router.push("/admin/users");
+      if (user.type === "admin") router.push("/admin/exercises");
       else router.push("/user/track");
     } catch (err) {
       console.log(err);
@@ -43,7 +43,12 @@ export default function page() {
 
   useEffect(() => {
     const token = getAccessToken();
-    if (token) router.push("/user/track");
+    if (token) {
+      const user = getUser();
+
+      if (user.type === "admin") router.push("/admin/exercises");
+      else router.push("/user/track");
+    }
   }, []);
 
   return (

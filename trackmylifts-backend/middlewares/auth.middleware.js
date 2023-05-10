@@ -10,7 +10,7 @@ const verifyAuth = async (req, res, next) => {
     }
 
     const user = verifyAuthJwt(accessToken);
-    
+
     req.user = user;
     next();
   } catch (err) {
@@ -38,20 +38,13 @@ const verifyUser = (req, res, next) => {
   }
 };
 
-const verifyUserAccess = ({ allowedUserTypes = [], allowedPermissions = [] }) => {
+const verifyUserType = (...allowedUserTypes) => {
   return (req, res, next) => {
-    const result = allowedUserTypes.includes(req.userType);
-    if (!result) return errorResponse(res, { code: 403, message: "User doesn't have the permission to access the resource." });
-
-    if (req.userType === "employer") {
-      const permissionResult = allowedPermissions.filter((allowedPermission) => req.permissions.includes(allowedPermission));
-
-      if (permissionResult.length !== allowedPermissions.length)
-        return errorResponse(res, { code: 403, message: "User doesn't have the permission to access the resource." });
-    }
+    const isPresent = allowedUserTypes.includes(req.user.type);
+    if (!isPresent) return errorResponse(res, { code: 403, message: "User doesn't have the permission to access the resource." });
 
     next();
   };
 };
 
-module.exports = { verifyAuth, verifyUser, verifyUserAccess };
+module.exports = { verifyAuth, verifyUser, verifyUserType };
