@@ -21,7 +21,10 @@ export default function Page() {
 
     try {
       if (!(firstName && lastName && email && password)) return toast.error("Please fill all fields");
-      await apiAxios.post("/users", { firstName, lastName, email, password });
+
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      await apiAxios.post("/users", { firstName, lastName, email, password, timezone: timeZone });
 
       toast.success("Account has been created. Please verify your email to login.");
       setTimeout(() => {

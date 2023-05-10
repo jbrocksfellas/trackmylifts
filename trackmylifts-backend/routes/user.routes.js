@@ -8,6 +8,7 @@ router.get("/verify-email/:session", userController.verifyEmail);
 
 router.use(verifyAuth);
 router.get("/:id", verifyUser, userController.findUserById);
+router.put("/:id/timezone", verifyUser, userController.updateUserTimezone);
 router.get("/:id/training-sessions/last-volume", verifyUser, userController.findLastExerciseVolume);
 router.get("/:id/training-sessions/today", verifyUser, userController.findTodayTrainingSession);
 

@@ -28,6 +28,11 @@ export default function page() {
       saveAccessToken(token);
       saveUser(user);
 
+      // update user timezone
+
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      await apiAxios.put("/users/me/timezone", { timezone: timeZone }, { headers: { Authorization: "Bearer " + token } });
+
       // if user is admin send to admin panel
       if (user.type === "admin") router.push("/admin/exercises");
       else router.push("/user/track");

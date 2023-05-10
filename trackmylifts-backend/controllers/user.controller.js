@@ -12,11 +12,11 @@ const { getTrainingSessionDates } = require("../utils/training_session.util");
 
 exports.createUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, timezone } = req.body;
 
     const lowerCaseEmail = email.toLowerCase();
 
-    const newUser = new User({ firstName, lastName, email, password });
+    const newUser = new User({ firstName, lastName, email, password, timezone });
 
     const user = await newUser.save();
 
@@ -90,7 +90,7 @@ exports.findUserById = async (req, res) => {
     const user = await User.findOne({ _id: id }).lean();
     if (!user) return error.badRequest("Invalid email or password!", res);
 
-    res.json({ id: user._id, email: user.email, type: user.type });
+    res.json({ id: user._id, email: user.email, type: user.type, timezone: user.timezone });
   } catch (err) {
     handleError(err, res);
   }
@@ -161,6 +161,19 @@ exports.findTodayTrainingSession = async (req, res) => {
       }),
       createdAt: trainingSession.createdAt,
     });
+  } catch (err) {
+    handleError(err, res);
+  }
+};
+
+exports.updateUserTimezone = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { timezone } = req.body;
+
+    await User.updateOne({ _id: id }, { timezone: timezone }).lean();
+
+    res.sendStatus(204);
   } catch (err) {
     handleError(err, res);
   }
